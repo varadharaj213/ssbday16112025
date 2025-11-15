@@ -19,6 +19,134 @@
             overflow-x: hidden;
         }
 
+        /* Password Protection Overlay */
+        #passwordOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+
+        #passwordOverlay.hidden {
+            display: none;
+        }
+
+        .password-container {
+            background: rgba(30, 30, 46, 0.95);
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .password-container h2 {
+            color: #7c3aed;
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        .password-container p {
+            color: #b8b8b8;
+            font-size: 18px;
+            margin-bottom: 30px;
+        }
+
+        .password-input-container {
+            position: relative;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .password-input {
+            width: 100%;
+            padding: 20px 50px 20px 20px;
+            font-size: 18px;
+            border: 2px solid rgba(124, 58, 237, 0.3);
+            border-radius: 15px;
+            background: rgba(30, 30, 46, 0.8);
+            color: white;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .password-input:focus {
+            outline: none;
+            border-color: #7c3aed;
+            box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #b8b8b8;
+            cursor: pointer;
+            font-size: 20px;
+            padding: 5px;
+            transition: color 0.3s ease;
+        }
+
+        .password-toggle:hover {
+            color: #7c3aed;
+        }
+
+        .password-submit {
+            background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            font-size: 18px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .password-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(124, 58, 237, 0.4);
+        }
+
+        .error-message {
+            color: #ff6b6b;
+            margin-top: 15px;
+            font-size: 16px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .hint {
+            color: #b8b8b8;
+            font-size: 14px;
+            margin-top: 20px;
+            font-style: italic;
+        }
+
         /* Video Intro Overlay */
         #videoOverlay {
             position: fixed;
@@ -45,19 +173,6 @@
             height: auto;
         }
 
-        #tapToPlay {
-            position: absolute;
-            color: white;
-            font-size: 24px;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 20px 40px;
-            border-radius: 50px;
-            cursor: pointer;
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            animation: pulse 2s infinite;
-        }
-
         #skipButton {
             position: absolute;
             bottom: 80px;
@@ -70,11 +185,12 @@
             backdrop-filter: blur(10px);
             border: 2px solid rgba(255, 255, 255, 0.3);
             z-index: 10001;
+            transition: all 0.3s ease;
         }
 
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+        #skipButton:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
         }
 
         #videoStatus {
@@ -494,6 +610,14 @@
 
         /* Mobile Responsive */
         @media (max-width: 768px) {
+            .password-container {
+                padding: 30px 20px;
+            }
+
+            .password-container h2 {
+                font-size: 28px;
+            }
+
             .sidebar {
                 transform: translateX(-100%);
                 width: 80%;
@@ -552,18 +676,35 @@
     </style>
 </head>
 <body>
+    <!-- Password Protection Overlay -->
+    <div id="passwordOverlay">
+        <div class="password-container">
+            <h2>🎂 Welcome to Snegha's Birthday! 🎉</h2>
+            <p>Please enter the password to continue</p>
+            <div class="password-input-container">
+                <input type="password" class="password-input" id="passwordInput" placeholder="Enter password..." onkeypress="handlePasswordKeypress(event)">
+                <button type="button" class="password-toggle" id="passwordToggle" onclick="togglePasswordVisibility()">
+                    👁️
+                </button>
+            </div>
+            <button class="password-submit" onclick="checkPassword()">Enter</button>
+            <div class="error-message" id="errorMessage">Incorrect password. Please try again.</div>
+            <div class="hint">Hint: It's her name followed by .E</div>
+        </div>
+    </div>
+
     <!-- Video Intro Overlay -->
     <div id="videoOverlay" class="hidden">
         <video id="introVideo" playsinline>
             <source src="wish.mp4" type="video/mp4">
+            Your browser does not support the video tag.
         </video>
-        <div id="tapToPlay">Tap to Play 🎉</div>
-        <div id="skipButton">Skip Videos</div>
-        <div id="videoStatus"></div>
+        <button id="skipButton" onclick="skipVideo()">Skip Video</button>
+        <div id="videoStatus">Playing Birthday Video...</div>
     </div>
 
     <!-- Main Container -->
-    <div id="mainContainer">
+    <div id="mainContainer" class="hidden">
         <!-- Mobile Menu Toggle -->
         <button class="menu-toggle" onclick="toggleMenu()">
             <span></span>
@@ -637,12 +778,50 @@
     </div>
 
     <script>
-        // Video intro logic
-        let currentVideoIndex = 0;
-        const videos = ['gif.mp4','wish.mp4'];
+        // Password protection logic
+        const CORRECT_PASSWORD = "Snegha.E";
+        const passwordOverlay = document.getElementById('passwordOverlay');
+        const passwordInput = document.getElementById('passwordInput');
+        const passwordToggle = document.getElementById('passwordToggle');
+        const errorMessage = document.getElementById('errorMessage');
+
+        // Toggle password visibility
+        function togglePasswordVisibility() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            passwordToggle.textContent = type === 'password' ? '👁️' : '🔒';
+        }
+
+        function checkPassword() {
+            const enteredPassword = passwordInput.value.trim();
+            
+            if (enteredPassword === CORRECT_PASSWORD) {
+                // Correct password - proceed to single video
+                passwordOverlay.classList.add('hidden');
+                startVideoIntro();
+            } else {
+                // Incorrect password - show error
+                errorMessage.classList.add('show');
+                passwordInput.value = '';
+                passwordInput.focus();
+                
+                // Shake animation for wrong password
+                passwordInput.style.animation = 'shake 0.5s ease-in-out';
+                setTimeout(() => {
+                    passwordInput.style.animation = '';
+                }, 500);
+            }
+        }
+
+        function handlePasswordKeypress(event) {
+            if (event.key === 'Enter') {
+                checkPassword();
+            }
+        }
+
+        // Video intro logic - SINGLE VIDEO ONLY
         const videoOverlay = document.getElementById('videoOverlay');
         const introVideo = document.getElementById('introVideo');
-        const tapToPlay = document.getElementById('tapToPlay');
         const skipButton = document.getElementById('skipButton');
         const videoStatus = document.getElementById('videoStatus');
         const mainContainer = document.getElementById('mainContainer');
@@ -853,79 +1032,52 @@
             });
         }
 
-        // Update video status
-        function updateStatus(text) {
-            videoStatus.textContent = text;
+        // Start single video after password is correct
+        function startVideoIntro() {
+            videoOverlay.classList.remove('hidden');
+            playSingleVideo();
         }
 
-        // Play current video
-        function playCurrentVideo() {
-            tapToPlay.style.display = 'none';
-            skipButton.style.display = 'block';
-            updateStatus(`Playing video ${currentVideoIndex + 1} of ${videos.length}...`);
+        // Play single video only
+        function playSingleVideo() {
+            videoStatus.textContent = 'Playing birthday wish...';
             
             // Ensure audio is enabled
             introVideo.muted = false;
             
             introVideo.play().catch(err => {
                 console.log('Autoplay failed:', err);
-                tapToPlay.style.display = 'block';
-                updateStatus('Tap to play video');
+                videoStatus.textContent = 'Click skip to continue';
             });
         }
 
-        // Skip video function - FIXED: Properly handles skipping
+        // Skip video function - stops video and goes to main site
         function skipVideo() {
-            // Move to the next video or finish
-            currentVideoIndex++;
-            
-            if (currentVideoIndex < videos.length) {
-                introVideo.src = videos[currentVideoIndex];
-                playCurrentVideo();
-            } else {
-                // All videos finished or skipped, show main site
-                showMainPage();
-            }
+            // Stop the video completely
+            introVideo.pause();
+            introVideo.currentTime = 0;
+            showMainPage();
         }
 
-        // Handle video end
+        // Handle video end - stops video and goes to main site
         introVideo.addEventListener('ended', () => {
-            currentVideoIndex++;
-            
-            if (currentVideoIndex < videos.length) {
-                introVideo.src = videos[currentVideoIndex];
-                playCurrentVideo();
-            } else {
-                // All videos finished, show main site
-                showMainPage();
-            }
+            // Stop the video completely
+            introVideo.pause();
+            introVideo.currentTime = 0;
+            showMainPage();
         });
 
         // Show main page and hide video overlay
         function showMainPage() {
             videoOverlay.classList.add('hidden');
             mainContainer.classList.remove('hidden');
-            
-            // Reset video state for next time
-            currentVideoIndex = 0;
-            introVideo.src = videos[currentVideoIndex];
         }
 
-        // Tap to play handler
-        tapToPlay.addEventListener('click', () => {
-            playCurrentVideo();
-        });
-
-        // Skip button handler
-        skipButton.addEventListener('click', () => {
-            skipVideo();
-        });
-
-        // Initialize the page - show main content directly
+        // Initialize the page - show password overlay first
         window.addEventListener('load', () => {
             populateMemoriesGrid();
-            // Show main page directly without playing videos
-            showMainPage();
+            // Focus on password input when page loads
+            passwordInput.focus();
         });
 
         // Navigation
@@ -957,12 +1109,10 @@
 
         // Play video again function
         function playVideoAgain() {
-            // Reset video index and show video overlay
-            currentVideoIndex = 0;
-            introVideo.src = videos[currentVideoIndex];
+            // Show video overlay again
             videoOverlay.classList.remove('hidden');
             mainContainer.classList.add('hidden');
-            playCurrentVideo();
+            playSingleVideo();
             
             // Close mobile menu
             document.getElementById('sidebar').classList.remove('open');
@@ -1019,6 +1169,7 @@
             
             if (video) {
                 video.pause();
+                video.currentTime = 0;
             }
             
             viewer.classList.remove('active');
